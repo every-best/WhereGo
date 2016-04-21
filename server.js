@@ -1,16 +1,13 @@
-require('babel-register');
-require('babel-polyfill');
+import express from 'express';
+import path from 'path';
+import mongoose from 'mongoose';
+import bodyParser from 'body-parser';
 
-var express = require('express');
-var path = require('path');
-var mongoose = require('mongoose');
-var bodyParser = require('body-parser');
+import React from "react";
+import ReactDOM from "react-dom/server";
+import Router from "react-router";
 
-var React = require("react");
-var ReactDOM = require("react-dom/server");
-var Router = require("react-router");
-
-var config = require('./config');
+import config from './config';
 
 mongoose.connect(config.database);
 mongoose.connection.on('error',function(){
@@ -18,23 +15,17 @@ mongoose.connection.on('error',function(){
 });
 
 //第一次加载处理初始数据，获取货币信息
-//var getCurrencies = require("./crawler/getCurrencies");
-var getHistoryRate = require("./crawler/getHistoryRate");
 
-//new Promise(getCurrencies)
-//    .then((result)=>{
-//            console.log("insert success");
-//        })
-//    .catch( (err) => {
-//        console.warn(err);
-//    });
-getHistoryRate({curId:2091})
-    .then((result) => {
-        console.log(result);
-})
-    .catch( (err)  => {
-    console.warn(err);
-});
+
+
+
+//getHistoryRate({curId:2091})
+//    .then((results) => {
+//        console.log(results);
+//})
+//    .catch( (err)  => {
+//    console.warn(err);
+//});
 //
 //var app = express();
 //app.set('view engine', 'jade');

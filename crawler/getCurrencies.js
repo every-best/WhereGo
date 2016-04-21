@@ -1,12 +1,9 @@
 import  superagent from 'superagent'
 import  cheerio from 'cheerio'
 import async from "async";
-import  CurrencyService from  './../services/currencyService';
 import getCurrenciesCurid from './getCurrenciesCurid';
 
-var currencyService =  new  CurrencyService();
-
-function getCurrencies(resovle,reject) {
+export default function (resovle,reject) {
     let sUrl = "http://cn.investing.com/currencies";
     var baseCode = "USD";
     superagent.get(sUrl)
@@ -16,8 +13,11 @@ function getCurrencies(resovle,reject) {
             }
             var $ = cheerio.load(res.text),  aCurrencies = [];
             var aElements = $("#directoryFilter .curExpCol ul li a");
+            if(!aElements){
+                reject("res status :" + res.statusCode);
+            }
             Array.from(aElements).map((element) => {
-                var sRateUrl = $(element).attr("href"), sCode, sName, nPosition;
+                var sRateUrl = $(element).attr("href"), sCode, sName, nPosition = 0;
                 var aNames = $(element).attr("title").split(" ");
                 var aTexts = $(element).text().split("/");
                 if (aTexts && aTexts.length >= 2) {
@@ -46,21 +46,16 @@ function getCurrencies(resovle,reject) {
             aFunctions = aCurrencies.map((oCurrency) => {
                 return getCurrenciesCurid(oCurrency);
             });
-            var count = 0,otherResults = [];
+            var count = 0,finalResults = [];
            for(let aFuns of seperateRequest(aFunctions,10)){
                setTimeout(function(){
                    Promise.all(aFuns.map((oFunc)=>{
                        return new Promise(oFunc);
                    })).then((results) => {
-                       otherResults = otherResults.concat(results);
-                       currencyService.batchCreate(results).then((currencies) => {
-                            console.log(currencies.length);
-                       })
-                        .catch((err) => {
-                               reject(err);
-                           });
-                        if(otherResults.length >= aFunctions.length){
-                            resovle("success");
+                       finalResults = finalResults.concat(results);
+
+                        if(finalResults.length >= aFunctions.length){
+                            resovle(finalResults);
                         }
                    })
                        .catch((err) => {
@@ -87,4 +82,3 @@ function* seperateRequest(aFunctions,nNumberLimit){
         }
     }
 }
-module.exports = getCurrencies;

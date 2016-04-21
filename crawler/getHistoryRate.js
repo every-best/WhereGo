@@ -1,6 +1,7 @@
 import superagent from 'superagent'
 import  cheerio from 'cheerio'
-function getHistoryRate(oCurrency){
+export default function (oCurrency){
+
     function getHistoryPromise(resolve,reject){
         var sUrl = 'http://cn.investing.com/instruments/HistoricalDataAjax';
         var sStartDate,sEndDate;
@@ -39,7 +40,9 @@ function getHistoryRate(oCurrency){
             var elements = $("#curr_table tbody tr");
                 console.log(elements.length);
                 aData = Array.from(elements).map( (element) =>{
-                    var oData = {};
+                    var oData = {
+                        currency:oCurrency
+                    };
                     Array.from( $('td',element)).forEach((tdEl,nIndex) => {
                         var sValue = $(tdEl).text();
                         switch(nIndex){
@@ -69,6 +72,5 @@ function getHistoryRate(oCurrency){
                 resolve(aData);
         });
     }
-    return new Promise(getHistoryPromise);
+    return getHistoryPromise;
 }
-module.exports = getHistoryRate;
