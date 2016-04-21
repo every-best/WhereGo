@@ -4,7 +4,7 @@ import Currency from './../models/currency'
 
 class InitService {
     insertBatchData(aParams){
-        var oCurrency =
+       // var oCurrency =
     }
 }
 export default InitService;

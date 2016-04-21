@@ -25,7 +25,6 @@ export default function (oCurrency){
             .set("Accept-Language","zh-CN,zh;q=0.8")
             .set("Connection","keep-alive")
             .set("Content-Type","application/x-www-form-urlencoded")
-            .set("Referer","http://cn.investing.com/currencies/usd-aud-historical-data")
             .set("X-Requested-With","XMLHttpRequest")
             .set("User-Agent","Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.112 Safari/537.36")
             .set("Origin","http://cn.investing.com")
@@ -35,41 +34,47 @@ export default function (oCurrency){
                 if(err){
                     reject(err);
                 }
-            var $ = cheerio.load(res.text);
-             var aData =[];
-            var elements = $("#curr_table tbody tr");
-                console.log(elements.length);
-                aData = Array.from(elements).map( (element) =>{
-                    var oData = {
-                        currency:oCurrency
-                    };
-                    Array.from( $('td',element)).forEach((tdEl,nIndex) => {
-                        var sValue = $(tdEl).text();
-                        switch(nIndex){
-                            case 0:
-                                oData.time = new Date(sValue.replace(/[\u5e74\u6708\u65e5]/g,'-'));
-                                break;
-                            case 1:
-                                oData.exchangeRate = sValue;
-                                break;
-                            case 2:
-                                oData.startPrice = sValue;
-                                break;
-                            case 3:
-                                oData.highest = sValue;
-                                break;
-                            case 4:
-                                oData.lowest = sValue;
-                                break;
-                            case 5:
-                                oData.upOrDown = (sValue.replace("%","")-0)*0.01
-                                break;
-                        }
+                if(!res){
+                    reject("res error");
+                }else{
+                    var $ = cheerio.load(res.text||"");
+                    var aData =[];
+                    var elements = $("#curr_table tbody tr");
+                    if(!elements || elements.length == 0){
+                        reject("getHistoryRate res status :" + res.statusCode);
+                    }
+                    aData = Array.from(elements).map( (element) =>{
+                        var oData = {
+                            currency:oCurrency
+                        };
+                        Array.from( $('td',element)).forEach((tdEl,nIndex) => {
+                            var sValue = $(tdEl).text();
+                            switch(nIndex){
+                                case 0:
+                                    oData.time = new Date(sValue.replace(/[\u5e74\u6708\u65e5]/g,'-'));
+                                    break;
+                                case 1:
+                                    oData.exchangeRate = sValue;
+                                    break;
+                                case 2:
+                                    oData.startPrice = sValue;
+                                    break;
+                                case 3:
+                                    oData.highest = sValue;
+                                    break;
+                                case 4:
+                                    oData.lowest = sValue;
+                                    break;
+                                case 5:
+                                    oData.upOrDown = (sValue.replace("%","")-0)*0.01
+                                    break;
+                            }
+                        });
+                        oData.currency = oCurrency;
+                        return oData;
                     });
-                    oData.currency = oCurrency;
-                    return oData;
-                });
-                resolve(aData);
+                    resolve(aData);
+                }
         });
     }
     return getHistoryPromise;

@@ -1,19 +1,19 @@
 import  superagent from 'superagent'
 import  cheerio from 'cheerio'
 import async from "async";
-import getCurrenciesCurid from './getCurrenciesCurid';
+import getCurrenciesInfo from './getCurrenciesInfo';
 
-export default function (resovle,reject) {
-    let sUrl = "http://cn.investing.com/currencies";
+export default function (resolve,reject) {
+    let sUrl = "https://cn.investing.com/currencies";
     var baseCode = "USD";
     superagent.get(sUrl)
-        .end(function (err, res) {
+       .end(function (err, res) {
             if (err) {
                 reject(err);
             }
             var $ = cheerio.load(res.text),  aCurrencies = [];
-            var aElements = $("#directoryFilter .curExpCol ul li a");
-            if(!aElements){
+            var aElements = $(".curExpCol ul li a");
+            if(!aElements || aElements.length == 0){
                 reject("res status :" + res.statusCode);
             }
             Array.from(aElements).map((element) => {
@@ -44,7 +44,7 @@ export default function (resovle,reject) {
             //获取curId
             var aFunctions = [];
             aFunctions = aCurrencies.map((oCurrency) => {
-                return getCurrenciesCurid(oCurrency);
+                return getCurrenciesInfo(oCurrency,{curId:true});
             });
             var count = 0,finalResults = [];
            for(let aFuns of seperateRequest(aFunctions,10)){
@@ -55,7 +55,7 @@ export default function (resovle,reject) {
                        finalResults = finalResults.concat(results);
 
                         if(finalResults.length >= aFunctions.length){
-                            resovle(finalResults);
+                            resolve(finalResults);
                         }
                    })
                        .catch((err) => {

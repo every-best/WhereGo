@@ -30,5 +30,15 @@ class CurrencyService{
             });
         });
     }
+    list(){
+        return new Promise((resolve,reject) => {
+            Currency.find().exec((err,currencies) => {
+                if(err){
+                    reject(err);
+                }
+                resolve(currencies);
+            })
+        })
+    }
 }
 export default   CurrencyService;
